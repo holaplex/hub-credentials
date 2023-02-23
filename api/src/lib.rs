@@ -3,11 +3,9 @@
 #![allow(clippy::module_name_repetitions)]
 
 pub mod graphql;
-pub mod db;
 pub mod handlers;
+pub mod ory_client;
 
-
-use db::Connection;
 use hub_core::{
     anyhow::{Error, Result},
     clap,
@@ -23,7 +21,7 @@ pub struct Args {
     pub port: u16,
 
     #[command(flatten)]
-    pub db: db::DbArgs,
+    pub ory: ory_client::OryArgs,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -52,53 +50,26 @@ impl<'a> FromRequest<'a> for UserID {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct UserEmail(Option<String>);
-
-#[async_trait]
-impl<'a> FromRequest<'a> for UserEmail {
-    async fn from_request(req: &'a Request, _body: &mut RequestBody) -> poem::Result<Self> {
-        let id = req
-            .headers()
-            .get("X-USER-EMAIL")
-            .and_then(|value| value.to_str().ok())
-            .map(std::string::ToString::to_string);
-
-        Ok(Self(id))
-    }
-}
-
 #[derive(Clone)]
 pub struct AppState {
     pub schema: graphql::schema::AppSchema,
-    pub connection: Connection,
+    pub ory: ory_client::Client,
 }
 
 impl AppState {
     #[must_use]
-    pub fn new(
-        schema: graphql::schema::AppSchema,
-        connection: Connection,
-    ) -> Self {
-        Self {
-            schema,
-            connection,
-        }
+    pub fn new(schema: graphql::schema::AppSchema, ory: ory_client::Client) -> Self {
+        Self { schema, ory }
     }
 }
 
 pub struct AppContext {
-    pub db: Connection,
     pub user_id: Option<Uuid>,
-    pub user_email: Option<String>,
 }
 
 impl AppContext {
-    #[must_use] pub fn new(db: Connection, user_id: Option<Uuid>, user_email: Option<String>) -> Self {
-        Self {
-            db,
-            user_id,
-            user_email,
-        }
+    #[must_use]
+    pub fn new(user_id: Option<Uuid>) -> Self {
+        Self { user_id }
     }
 }

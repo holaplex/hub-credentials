@@ -1,42 +1,34 @@
-
-
-use holaplex_rust_boilerplate_api::{
-    db::{Connection, DbArgs},
+use holaplex_hub_credentials::{
     graphql::schema::build_schema,
-    handlers::{graphql_handler, playground},
-    AppState,
+    handlers::{graphql_handler, health, playground},
+    ory_client, AppState,
 };
-use hub_core::{clap, prelude::*};
-use poem::{
-    get, listener::TcpListener, middleware::AddData, post, EndpointExt, Route, Server,
-};
+use hub_core::clap;
+use poem::{get, listener::TcpListener, middleware::AddData, post, EndpointExt, Route, Server};
 
 #[derive(Debug, clap::Args)]
 #[command(version, author, about)]
 pub struct Args {
-    #[arg(short, long, env, default_value_t = 3002)]
+    #[arg(short, long, env, default_value_t = 3005)]
     pub port: u16,
 
     #[command(flatten)]
-    pub db: DbArgs,
+    pub ory: ory_client::OryArgs,
 }
 
 pub fn main() {
     let opts = hub_core::StartConfig {
-        service_name: "hub-boilerplate-rust",
+        service_name: "hub-credentials",
     };
 
     hub_core::run(opts, |common, args| {
-        let Args { port, db } = args;
+        let Args { port, ory } = args;
 
         common.rt.block_on(async move {
-            let connection = Connection::new(db)
-                .await
-                .context("failed to get database connection")?;
-
             let schema = build_schema();
 
-            let state = AppState::new(schema, connection);
+            let ory = ory_client::Client::new(ory);
+            let state = AppState::new(schema, ory);
 
             Server::new(TcpListener::bind(format!("0.0.0.0:{port}")))
                 .run(
@@ -45,7 +37,8 @@ pub fn main() {
                             "/graphql",
                             post(graphql_handler).with(AddData::new(state.clone())),
                         )
-                        .at("/playground", get(playground)),
+                        .at("/playground", get(playground))
+                        .at("/health", get(health)),
                 )
                 .await
                 .map_err(Into::into)

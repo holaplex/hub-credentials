@@ -1,12 +1,49 @@
 version: '3.8'
 services:
-  db:
-    image: postgres:15.1
-    env_file:
-      - .env
+  envoy:
+    image: envoyproxy/envoy:v1.25-latest
+    volumes:
+      - type: bind
+        source: ./envoy.yaml
+        target: /etc/envoy/envoy.yaml
     ports:
-      - 5437:5432
-    volumes: 
-      - holaplex_rust_boilerplate_db:/var/lib/postgresql/data
+      - "10000:10000"
+  hydra:
+    image: oryd/hydra:v2.0.3
+    command: serve -c /etc/config/hydra/hydra.yaml all --dev 
+    volumes:
+      - type: bind
+        source: ./hydra.yaml
+        target: /etc/config/hydra/hydra.yaml
+    environment:
+      - DSN=postgres://holaplex:holaplex@postgresd:5432/hydra?sslmode=disable&max_conns=100&max_idle_conns=100
+      - LOG_LEVEL=debug
+      - OAUTH2_EXPOSE_INTERNAL_ERRORS=1
+      - LOG_LEAK_SENSITIVE_VALUES=true
+    depends_on:
+      - hydra-migrate
+  hydra-migrate:
+    image: oryd/hydra:v2.0.3
+    environment:
+      - DSN=postgres://holaplex:holaplex@postgresd:5432/hydra?sslmode=disable&max_conns=100&max_idle_conns=100
+    command: migrate -c /etc/config/hydra/hydra.yaml sql -e --yes
+    env_file:
+      - .env 
+    volumes:
+      - type: bind
+        source: ./hydra.yaml
+        target: /etc/config/hydra/hydra.yaml
+    restart: on-failure
+  postgresd:
+    image: postgres:15.1
+    ports:
+      - "5132:5432"
+    environment:
+      - POSTGRES_USER=holaplex
+      - POSTGRES_PASSWORD=holaplex
+      - POSTGRES_DB=hydra
+    volumes:
+      - hydra-db:/var/lib/postgresql/data
+
 volumes:
-  holaplex_rust_boilerplate_db:
+  hydra-db:
