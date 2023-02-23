@@ -1,12 +1,13 @@
-# hub-rust-boilerplate
-Template rust service repository for the Holaplex Hub
+# Hub Credentials
 
-# Workspaces
+GraphQL API for interacting with Ory Hydra. It is responsible for creating and reading Ory OAuth2 clients and access tokens.
+
+# Getting Started
 
 ```
-/api # API server
-/core # shared dependencies such as queries and mutations
-/entity # application database models and graphql objects
-/migration # database migrations
-/src # app entry point
+docker compose up -d
+cargo run --bin holaplex-hub-credentials 
 ```
+
+Visit [http://localhost:3005/playground](http://localhost:3005/playground) to access GraphQL playground.
+

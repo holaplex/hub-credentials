@@ -19,12 +19,13 @@ RUN cargo build --release --bin holaplex-hub-credentials
 FROM debian:bullseye-slim as base
 WORKDIR /app
 RUN apt-get update -y && \
-  apt-get install -y \
+  apt-get install -y --no-install-recommends \
     ca-certificates \
     libpq5 \
     libssl1.1 \
   && \
   rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /app/target/release/holaplex-hub-credentials bin
 CMD ["bin/holaplex-hub-credentials"]
 
