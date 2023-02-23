@@ -26,6 +26,8 @@ RUN apt-get update -y && \
   && \
   rm -rf /var/lib/apt/lists/*
 
+RUN mkdir -p bin
+
 COPY --from=builder /app/target/release/holaplex-hub-credentials bin
 CMD ["bin/holaplex-hub-credentials"]
 
