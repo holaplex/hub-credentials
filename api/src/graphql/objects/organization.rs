@@ -7,6 +7,7 @@ use crate::ory_client::Client;
 #[derive(Debug, Clone, SimpleObject)]
 #[graphql(complex)]
 pub struct Organization {
+    #[graphql(external)]
     pub id: Uuid,
 }
 
