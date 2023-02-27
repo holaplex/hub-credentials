@@ -1,16 +1,11 @@
 version: '3.8'
 services:
-  envoy:
-    image: envoyproxy/envoy:v1.25-latest
-    volumes:
-      - type: bind
-        source: ./envoy.yaml
-        target: /etc/envoy/envoy.yaml
-    ports:
-      - "10000:10000"
   hydra:
     image: oryd/hydra:v2.0.3
     command: serve -c /etc/config/hydra/hydra.yaml all --dev 
+    ports:
+      - "4445:4445" # admin
+      - "4444:4444" # public
     volumes:
       - type: bind
         source: ./hydra.yaml

@@ -15,15 +15,18 @@ use ory_openapi_generated_client::{
 /// Arguments for establishing a database connection
 #[derive(Debug, clap::Args)]
 pub struct OryArgs {
-    #[arg(long, env, default_value = "http://127.0.0.1:10000")]
-    ory_base_url: String,
+    #[arg(long, env, default_value = "http://127.0.0.1:4445")]
+    ory_admin_base_url: String,
+    #[arg(long, env, default_value = "http://127.0.0.1:4444")]
+    ory_public_base_url: String,
     #[arg(long, env, default_value = "")]
     ory_auth_token: String,
 }
 
 #[derive(Clone, Debug)]
 pub struct Client {
-    base_url: String,
+    admin_base_url: String,
+    public_base_url: String,
     auth_token: String,
 }
 
@@ -31,12 +34,14 @@ impl Client {
     #[must_use]
     pub fn new(args: OryArgs) -> Self {
         let OryArgs {
-            ory_base_url,
+            ory_admin_base_url,
+            ory_public_base_url,
             ory_auth_token,
         } = args;
 
         Self {
-            base_url: ory_base_url,
+            admin_base_url: ory_admin_base_url,
+            public_base_url: ory_public_base_url,
             auth_token: ory_auth_token,
         }
     }
@@ -46,7 +51,7 @@ impl Client {
         o_auth2_client: &OAuth2Client,
     ) -> Result<OAuth2Client, Error<CreateOAuth2ClientError>> {
         let config = Configuration {
-            base_path: self.base_url.clone(),
+            base_path: self.admin_base_url.clone(),
             bearer_access_token: Some(self.auth_token.clone()),
             ..Configuration::default()
         };
@@ -59,7 +64,7 @@ impl Client {
         client_id: &str,
     ) -> Result<OAuth2Client, Error<GetOAuth2ClientError>> {
         let config = Configuration {
-            base_path: self.base_url.clone(),
+            base_path: self.admin_base_url.clone(),
             bearer_access_token: Some(self.auth_token.clone()),
             ..Configuration::default()
         };
@@ -74,7 +79,7 @@ impl Client {
         page_token: Option<&str>,
     ) -> Result<Vec<OAuth2Client>, Error<ListOAuth2ClientsError>> {
         let config = Configuration {
-            base_path: self.base_url.clone(),
+            base_path: self.admin_base_url.clone(),
             bearer_access_token: Some(self.auth_token.clone()),
             ..Configuration::default()
         };
@@ -88,7 +93,7 @@ impl Client {
         client_secret: String,
     ) -> Result<OAuth2TokenExchange, Error<Oauth2TokenExchangeError>> {
         let config = Configuration {
-            base_path: self.base_url.clone(),
+            base_path: self.public_base_url.clone(),
             basic_auth: Some((client_id, Some(client_secret))),
             ..Configuration::default()
         };
