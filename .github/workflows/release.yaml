@@ -32,3 +32,12 @@ jobs:
           tags: holaplex/hub-credentials:${{ github.sha }},holaplex/hub-credentials:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - 
+        name: Invoke workflow in hub-kubes repo
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          ref: main
+          token: ${{ secrets.ACTIONS_TOKEN }}
+          workflow: release.yml
+          repo: holaplex/hub-kubes
+          inputs: '{ "service": "credentials", "environment": "stage", "commit_hash": "${{ github.sha }}"}'
