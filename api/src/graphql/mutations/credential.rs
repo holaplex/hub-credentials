@@ -32,7 +32,7 @@ impl Mutation {
             grant_types: Some(vec!["client_credentials".to_string()]),
             client_name: Some(input.name),
             owner: Some(input.organization.to_string()),
-            client_credentials_grant_access_token_lifespan: None,
+            client_credentials_grant_access_token_lifespan: Some("872h".to_string()),
             audience: Some(
                 input
                     .projects
