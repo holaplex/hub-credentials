@@ -1,6 +1,4 @@
-// Add your other ones here to create a unified Mutation object
-// e.x. Mutation(SomeMutation, OtherMutation, OtherOtherMutation)
-
+#![allow(clippy::unused_async)]
 mod credential;
 
 #[derive(async_graphql::MergedObject, Default)]
