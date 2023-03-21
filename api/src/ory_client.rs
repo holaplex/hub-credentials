@@ -3,9 +3,9 @@ use ory_openapi_generated_client::{
     apis::{
         configuration::Configuration,
         o_auth2_api::{
-            create_o_auth2_client, get_o_auth2_client, list_o_auth2_clients, oauth2_token_exchange,
+            create_o_auth2_client, get_o_auth2_client, list_o_auth2_clients, oauth2_token_exchange, delete_o_auth2_client,
             CreateOAuth2ClientError, GetOAuth2ClientError, ListOAuth2ClientsError,
-            Oauth2TokenExchangeError,
+            Oauth2TokenExchangeError, DeleteOAuth2ClientError
         },
         Error,
     },
@@ -70,6 +70,19 @@ impl Client {
         };
 
         get_o_auth2_client(&config, client_id).await
+    }
+
+    pub async fn delete_client(
+        &self,
+        client_id: &str,
+    ) -> Result<(), Error<DeleteOAuth2ClientError>> {
+        let config = Configuration {
+            base_path: self.admin_base_url.clone(),
+            bearer_access_token: Some(self.auth_token.clone()),
+            ..Configuration::default()
+        };
+
+        delete_o_auth2_client(&config, client_id).await
     }
 
     pub async fn list_clients(

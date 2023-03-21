@@ -69,6 +69,69 @@ impl Mutation {
             access_token,
         })
     }
+
+       /// Res
+    ///
+    /// # Errors
+    /// This function fails if ...
+    pub async fn edit_credential(
+        &self,
+        ctx: &Context<'_>,
+        input: EditCredentialInput,
+    ) -> Result<EditCredentialPayload> {
+        let AppContext { user_id, .. } = ctx.data::<AppContext>()?;
+        let ory = ctx.data::<Client>()?;
+
+        let user_id = user_id.ok_or_else(|| Error::new("X-USER-ID header not found"))?;
+
+        let current_client = ory.get_client(&input.client_id.clone()).await?;
+        let current_credential: Credential = current_client.try_into()?;
+
+        // ory client post request payload
+        let o_auth2_client = OAuth2Client {
+            grant_types: Some(vec!["client_credentials".to_string()]),
+            client_name: Some(input.name),
+            owner: Some(current_credential.organization_id.clone().to_string()),
+            client_credentials_grant_access_token_lifespan: Some("8760h".to_string()),
+            audience: Some(
+                input
+                    .projects
+                    .into_iter()
+                    .map(|p| {
+                        let project = p.to_string();
+
+                        format!("https://holaplex.com/projects/{project}")
+                    })
+                    .collect(),
+            ),
+            contacts: Some(vec![user_id.to_string()]),
+            scope: Some(input.scopes.join(" ")),
+            ..Default::default()
+        };
+
+        let o_auth2_client_response = ory.create_client(&o_auth2_client).await?;
+
+        let client_secret = o_auth2_client_response
+            .client_secret
+            .clone()
+            .ok_or_else(|| Error::new("no client_secret on OAuth2 client response"))?;
+
+        let credential: Credential = o_auth2_client_response.try_into()?;
+
+        let token_exchange_response = ory
+            .exchange_token(credential.client_id.clone(), client_secret)
+            .await?;
+
+        let access_token = token_exchange_response.try_into()?;
+
+        // Delete current credential
+        ory.delete_client(&input.client_id.clone()).await?;
+
+        Ok(EditCredentialPayload {
+            credential,
+            access_token,
+        })
+    }
 }
 
 #[derive(InputObject, Clone, Debug)]
@@ -82,6 +145,20 @@ pub struct CreateCredentialInput {
 // Request payload for creating a credential
 #[derive(Debug, Clone, SimpleObject)]
 pub struct CreateCredentialPayload {
+    credential: Credential,
+    access_token: AccessToken,
+}
+
+#[derive(InputObject, Clone, Debug)]
+pub struct EditCredentialInput {
+    pub client_id: String,
+    pub name: String,
+    pub projects: Vec<Uuid>,
+    pub scopes: Vec<String>,
+}
+
+#[derive(Debug, Clone, SimpleObject)]
+pub struct EditCredentialPayload {
     credential: Credential,
     access_token: AccessToken,
 }
