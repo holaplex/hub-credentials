@@ -109,28 +109,11 @@ impl Mutation {
             ..Default::default()
         };
 
-        let o_auth2_client_response = ory.create_client(&o_auth2_client).await?;
-
-        let client_secret = o_auth2_client_response
-            .client_secret
-            .clone()
-            .ok_or_else(|| Error::new("no client_secret on OAuth2 client response"))?;
+        let o_auth2_client_response = ory.update_client(&input.client_id, &o_auth2_client).await?;
 
         let credential: Credential = o_auth2_client_response.try_into()?;
 
-        let token_exchange_response = ory
-            .exchange_token(credential.client_id.clone(), client_secret)
-            .await?;
-
-        let access_token = token_exchange_response.try_into()?;
-
-        // Delete current credential
-        ory.delete_client(&input.client_id.clone()).await?;
-
-        Ok(EditCredentialPayload {
-            credential,
-            access_token,
-        })
+        Ok(EditCredentialPayload { credential })
     }
 }
 
@@ -160,5 +143,4 @@ pub struct EditCredentialInput {
 #[derive(Debug, Clone, SimpleObject)]
 pub struct EditCredentialPayload {
     credential: Credential,
-    access_token: AccessToken,
 }
