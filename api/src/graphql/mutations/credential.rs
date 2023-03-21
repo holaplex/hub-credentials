@@ -70,7 +70,7 @@ impl Mutation {
         })
     }
 
-       /// Res
+    /// Res
     ///
     /// # Errors
     /// This function fails if ...

@@ -3,9 +3,9 @@ use ory_openapi_generated_client::{
     apis::{
         configuration::Configuration,
         o_auth2_api::{
-            create_o_auth2_client, get_o_auth2_client, list_o_auth2_clients, oauth2_token_exchange, delete_o_auth2_client,
-            CreateOAuth2ClientError, GetOAuth2ClientError, ListOAuth2ClientsError,
-            Oauth2TokenExchangeError, DeleteOAuth2ClientError
+            create_o_auth2_client, delete_o_auth2_client, get_o_auth2_client, list_o_auth2_clients,
+            oauth2_token_exchange, CreateOAuth2ClientError, DeleteOAuth2ClientError,
+            GetOAuth2ClientError, ListOAuth2ClientsError, Oauth2TokenExchangeError,
         },
         Error,
     },
