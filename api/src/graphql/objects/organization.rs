@@ -30,7 +30,7 @@ impl Organization {
     ) -> Result<Vec<Credential>> {
         let ory = ctx.data::<Client>()?;
         let offset = offset.map(|i| i.to_string());
-        let offset = offset.as_ref().map(|x| &**x);
+        let offset = offset.as_deref();
 
         let o_auth2_clients = ory
             .list_clients(&self.id.to_string(), limit, offset)
