@@ -2,8 +2,8 @@ name: Release Image
 on:
   push:
     branches:
-      #- main
-      - mpw/fix-ci
+      - main
+
 jobs:
   release:
     runs-on: self-hosted
