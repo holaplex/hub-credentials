@@ -40,7 +40,7 @@ impl TryFrom<OAuth2Client> for Credential {
         let audiences = audience.unwrap_or(Vec::new());
 
         let scopes = scope.map_or(Vec::new(), |s| {
-            s.split(' ').map(|s| s.to_string()).collect()
+            s.split(' ').map(ToString::to_string).collect()
         });
 
         let created_by = contacts.ok_or_else(|| anyhow!("no contact list"))?;

@@ -1,10 +1,11 @@
 use async_graphql::{Context, Error, InputObject, Object, Result, SimpleObject};
-use hub_core::uuid::Uuid;
+use hub_core::{producer::Producer, uuid::Uuid};
 use ory_openapi_generated_client::models::OAuth2Client;
 
 use crate::{
     graphql::objects::{AccessToken, Credential},
     ory_client::Client,
+    proto::{self, credential_events::Event, CredentialEventKey, CredentialEvents},
     AppContext,
 };
 
@@ -24,6 +25,7 @@ impl Mutation {
     ) -> Result<CreateCredentialPayload> {
         let AppContext { user_id, .. } = ctx.data::<AppContext>()?;
         let ory = ctx.data::<Client>()?;
+        let producer = ctx.data::<Producer<CredentialEvents>>()?;
 
         let user_id = user_id.ok_or_else(|| Error::new("X-USER-ID header not found"))?;
 
@@ -51,18 +53,37 @@ impl Mutation {
 
         let o_auth2_client_response = ory.create_client(&o_auth2_client).await?;
 
+        let client_id = o_auth2_client_response
+            .client_id
+            .clone()
+            .ok_or_else(|| Error::new("no client id on OAuth2 client response"))?;
+
         let client_secret = o_auth2_client_response
             .client_secret
             .clone()
             .ok_or_else(|| Error::new("no client_secret on OAuth2 client response"))?;
 
-        let credential: Credential = o_auth2_client_response.try_into()?;
+        let credential: Credential = o_auth2_client_response.clone().try_into()?;
 
         let token_exchange_response = ory
             .exchange_token(credential.client_id.clone(), client_secret)
             .await?;
 
         let access_token = token_exchange_response.try_into()?;
+
+        let event = CredentialEvents {
+            event: Some(Event::Oauth2ClientCreated(proto::OAuth2Client {
+                user_id: user_id.to_string(),
+                client_name: o_auth2_client_response.client_name.unwrap_or_default(),
+                organization: input.organization.to_string(),
+            })),
+        };
+
+        let key = CredentialEventKey {
+            id: client_id.to_string(),
+        };
+
+        producer.send(Some(&event), Some(&key)).await?;
 
         Ok(CreateCredentialPayload {
             credential,

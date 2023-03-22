@@ -1,7 +1,9 @@
 use holaplex_hub_credentials::{
     graphql::schema::build_schema,
     handlers::{graphql_handler, health, playground},
-    ory_client, AppState,
+    ory_client,
+    proto::CredentialEvents,
+    AppState,
 };
 use hub_core::clap;
 use poem::{get, listener::TcpListener, middleware::AddData, post, EndpointExt, Route, Server};
@@ -28,7 +30,9 @@ pub fn main() {
             let schema = build_schema();
 
             let ory = ory_client::Client::new(ory);
-            let state = AppState::new(schema, ory);
+            let producer = common.producer_cfg.build::<CredentialEvents>().await?;
+
+            let state = AppState::new(schema, ory, producer);
 
             Server::new(TcpListener::bind(format!("0.0.0.0:{port}")))
                 .run(

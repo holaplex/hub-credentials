@@ -10,9 +10,20 @@ use hub_core::{
     anyhow::{Error, Result},
     clap,
     prelude::*,
+    producer::Producer,
     uuid::Uuid,
 };
 use poem::{async_trait, FromRequest, Request, RequestBody};
+
+pub mod proto {
+    include!(concat!(env!("OUT_DIR"), "/credential.proto.rs"));
+}
+
+use proto::CredentialEvents;
+
+impl hub_core::producer::Message for proto::CredentialEvents {
+    type Key = proto::CredentialEventKey;
+}
 
 #[derive(Debug, clap::Args)]
 #[command(version, author, about)]
@@ -54,12 +65,21 @@ impl<'a> FromRequest<'a> for UserID {
 pub struct AppState {
     pub schema: graphql::schema::AppSchema,
     pub ory: ory_client::Client,
+    pub producer: Producer<CredentialEvents>,
 }
 
 impl AppState {
     #[must_use]
-    pub fn new(schema: graphql::schema::AppSchema, ory: ory_client::Client) -> Self {
-        Self { schema, ory }
+    pub fn new(
+        schema: graphql::schema::AppSchema,
+        ory: ory_client::Client,
+        producer: Producer<CredentialEvents>,
+    ) -> Self {
+        Self {
+            schema,
+            ory,
+            producer,
+        }
     }
 }
 

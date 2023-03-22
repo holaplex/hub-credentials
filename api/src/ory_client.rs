@@ -47,6 +47,9 @@ impl Client {
         }
     }
 
+    /// Res
+    ///
+    /// # Errors
     pub async fn create_client(
         &self,
         o_auth2_client: &OAuth2Client,
@@ -60,6 +63,9 @@ impl Client {
         create_o_auth2_client(&config, o_auth2_client).await
     }
 
+    /// Res
+    ///
+    /// # Errors
     pub async fn update_client(
         &self,
         id: &str,
@@ -73,6 +79,9 @@ impl Client {
         set_o_auth2_client(&config, id, o_auth2_client).await
     }
 
+    /// Res
+    ///
+    /// # Errors
     pub async fn get_client(
         &self,
         client_id: &str,
@@ -86,6 +95,9 @@ impl Client {
         get_o_auth2_client(&config, client_id).await
     }
 
+    /// Res
+    ///
+    /// # Errors
     pub async fn delete_client(
         &self,
         client_id: &str,
@@ -99,6 +111,9 @@ impl Client {
         delete_o_auth2_client(&config, client_id).await
     }
 
+    /// Res
+    ///
+    /// # Errors
     pub async fn list_clients(
         &self,
         owner: &str,
@@ -114,6 +129,9 @@ impl Client {
         list_o_auth2_clients(&config, page_size, page_token, None, Some(owner)).await
     }
 
+    /// Res
+    ///
+    /// # Errors
     pub async fn exchange_token(
         &self,
         client_id: String,

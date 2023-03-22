@@ -29,7 +29,12 @@ pub async fn graphql_handler(
 
     Ok(state
         .schema
-        .execute(req.0.data(context).data(ory.clone()))
+        .execute(
+            req.0
+                .data(context)
+                .data(ory.clone())
+                .data(state.producer.clone()),
+        )
         .await
         .into())
 }
