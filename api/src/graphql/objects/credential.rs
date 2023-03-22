@@ -39,9 +39,9 @@ impl TryFrom<OAuth2Client> for Credential {
 
         let audiences = audience.unwrap_or(Vec::new());
 
-        let scopes = scope
-            .map(|s| s.split(" ").map(|s| s.to_string()).collect())
-            .unwrap_or(Vec::new());
+        let scopes = scope.map_or(Vec::new(), |s| {
+            s.split(' ').map(|s| s.to_string()).collect()
+        });
 
         let created_by = contacts.ok_or_else(|| anyhow!("no contact list"))?;
         let created_by = created_by.first().ok_or_else(|| anyhow!("no contact"))?;
@@ -54,13 +54,13 @@ impl TryFrom<OAuth2Client> for Credential {
         let created_at = NaiveDateTime::parse_from_str(&created_at, "%Y-%m-%dT%H:%M:%SZ")?;
 
         Ok(Self {
-            client_id,
             name,
+            client_id,
             scopes,
+            audiences,
             created_by_id,
             organization_id,
             created_at,
-            audiences,
         })
     }
 }

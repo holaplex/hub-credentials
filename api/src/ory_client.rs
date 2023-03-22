@@ -3,9 +3,10 @@ use ory_openapi_generated_client::{
     apis::{
         configuration::Configuration,
         o_auth2_api::{
-            create_o_auth2_client, get_o_auth2_client, list_o_auth2_clients, oauth2_token_exchange,
-            CreateOAuth2ClientError, GetOAuth2ClientError, ListOAuth2ClientsError,
-            Oauth2TokenExchangeError,
+            create_o_auth2_client, delete_o_auth2_client, get_o_auth2_client, list_o_auth2_clients,
+            oauth2_token_exchange, set_o_auth2_client, CreateOAuth2ClientError,
+            DeleteOAuth2ClientError, GetOAuth2ClientError, ListOAuth2ClientsError,
+            Oauth2TokenExchangeError, SetOAuth2ClientError,
         },
         Error,
     },
@@ -59,6 +60,19 @@ impl Client {
         create_o_auth2_client(&config, o_auth2_client).await
     }
 
+    pub async fn update_client(
+        &self,
+        id: &str,
+        o_auth2_client: &OAuth2Client,
+    ) -> Result<OAuth2Client, Error<SetOAuth2ClientError>> {
+        let config = Configuration {
+            base_path: self.admin_base_url.clone(),
+            bearer_access_token: Some(self.auth_token.clone()),
+            ..Configuration::default()
+        };
+        set_o_auth2_client(&config, id, o_auth2_client).await
+    }
+
     pub async fn get_client(
         &self,
         client_id: &str,
@@ -70,6 +84,19 @@ impl Client {
         };
 
         get_o_auth2_client(&config, client_id).await
+    }
+
+    pub async fn delete_client(
+        &self,
+        client_id: &str,
+    ) -> Result<(), Error<DeleteOAuth2ClientError>> {
+        let config = Configuration {
+            base_path: self.admin_base_url.clone(),
+            bearer_access_token: Some(self.auth_token.clone()),
+            ..Configuration::default()
+        };
+
+        delete_o_auth2_client(&config, client_id).await
     }
 
     pub async fn list_clients(

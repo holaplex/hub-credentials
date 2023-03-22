@@ -69,6 +69,52 @@ impl Mutation {
             access_token,
         })
     }
+
+    /// Res
+    ///
+    /// # Errors
+    /// This function fails if ...
+    pub async fn edit_credential(
+        &self,
+        ctx: &Context<'_>,
+        input: EditCredentialInput,
+    ) -> Result<EditCredentialPayload> {
+        let AppContext { user_id, .. } = ctx.data::<AppContext>()?;
+        let ory = ctx.data::<Client>()?;
+
+        let user_id = user_id.ok_or_else(|| Error::new("X-USER-ID header not found"))?;
+
+        let current_client = ory.get_client(&input.client_id.clone()).await?;
+        let current_credential: Credential = current_client.try_into()?;
+
+        // ory client post request payload
+        let o_auth2_client = OAuth2Client {
+            grant_types: Some(vec!["client_credentials".to_string()]),
+            client_name: Some(input.name),
+            owner: Some(current_credential.organization_id.clone().to_string()),
+            client_credentials_grant_access_token_lifespan: Some("8760h".to_string()),
+            audience: Some(
+                input
+                    .projects
+                    .into_iter()
+                    .map(|p| {
+                        let project = p.to_string();
+
+                        format!("https://holaplex.com/projects/{project}")
+                    })
+                    .collect(),
+            ),
+            contacts: Some(vec![user_id.to_string()]),
+            scope: Some(input.scopes.join(" ")),
+            ..Default::default()
+        };
+
+        let o_auth2_client_response = ory.update_client(&input.client_id, &o_auth2_client).await?;
+
+        let credential: Credential = o_auth2_client_response.try_into()?;
+
+        Ok(EditCredentialPayload { credential })
+    }
 }
 
 #[derive(InputObject, Clone, Debug)]
@@ -84,4 +130,17 @@ pub struct CreateCredentialInput {
 pub struct CreateCredentialPayload {
     credential: Credential,
     access_token: AccessToken,
+}
+
+#[derive(InputObject, Clone, Debug)]
+pub struct EditCredentialInput {
+    pub client_id: String,
+    pub name: String,
+    pub projects: Vec<Uuid>,
+    pub scopes: Vec<String>,
+}
+
+#[derive(Debug, Clone, SimpleObject)]
+pub struct EditCredentialPayload {
+    credential: Credential,
 }
