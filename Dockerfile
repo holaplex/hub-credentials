@@ -1,6 +1,18 @@
 FROM lukemathwalker/cargo-chef:0.1.50-rust-buster AS chef
 WORKDIR /app
 
+RUN apt-get update -y && \
+  apt-get install -y --no-install-recommends \
+    cmake \
+    g++ \
+    libsasl2-dev \
+    libssl-dev \
+    libudev-dev \
+    pkg-config \
+    protobuf-compiler \
+  && \
+  rm -rf /var/lib/apt/lists/*
+
 FROM chef AS planner
 COPY Cargo.* rust-toolchain.toml ./
 COPY api api
