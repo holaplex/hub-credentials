@@ -35,19 +35,7 @@ impl Mutation {
             client_name: Some(input.name),
             owner: Some(input.organization.to_string()),
             client_credentials_grant_access_token_lifespan: Some("8760h".to_string()),
-            audience: Some(
-                input
-                    .projects
-                    .into_iter()
-                    .map(|p| {
-                        let project = p.to_string();
-
-                        format!("https://holaplex.com/projects/{project}")
-                    })
-                    .collect(),
-            ),
             contacts: Some(vec![user_id.to_string()]),
-            scope: Some(input.scopes.join(" ")),
             ..Default::default()
         };
 
@@ -115,19 +103,7 @@ impl Mutation {
             client_name: Some(input.name),
             owner: Some(current_credential.organization_id.clone().to_string()),
             client_credentials_grant_access_token_lifespan: Some("8760h".to_string()),
-            audience: Some(
-                input
-                    .projects
-                    .into_iter()
-                    .map(|p| {
-                        let project = p.to_string();
-
-                        format!("https://holaplex.com/projects/{project}")
-                    })
-                    .collect(),
-            ),
             contacts: Some(vec![user_id.to_string()]),
-            scope: Some(input.scopes.join(" ")),
             ..Default::default()
         };
 
@@ -182,8 +158,6 @@ impl Mutation {
 pub struct CreateCredentialInput {
     pub organization: Uuid,
     pub name: String,
-    pub projects: Vec<Uuid>,
-    pub scopes: Vec<String>,
 }
 
 // Request payload for creating a credential
@@ -197,8 +171,6 @@ pub struct CreateCredentialPayload {
 pub struct EditCredentialInput {
     pub client_id: String,
     pub name: String,
-    pub projects: Vec<Uuid>,
-    pub scopes: Vec<String>,
 }
 
 #[derive(Debug, Clone, SimpleObject)]

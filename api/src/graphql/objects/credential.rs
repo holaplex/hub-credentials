@@ -11,8 +11,6 @@ use ory_openapi_generated_client::models::OAuth2Client;
 pub struct Credential {
     pub name: String,
     pub client_id: String,
-    pub scopes: Vec<String>,
-    pub audiences: Vec<String>,
     pub created_by_id: Uuid,
     pub organization_id: Uuid,
     pub created_at: NaiveDateTime,
@@ -25,23 +23,15 @@ impl TryFrom<OAuth2Client> for Credential {
         OAuth2Client {
             client_id,
             client_name,
-            scope,
             contacts,
             owner,
             created_at,
-            audience,
             ..
         }: OAuth2Client,
     ) -> Result<Self> {
         let client_id = client_id.ok_or_else(|| anyhow!("no client id"))?;
 
         let name = client_name.ok_or_else(|| anyhow!("no client name"))?;
-
-        let audiences = audience.unwrap_or(Vec::new());
-
-        let scopes = scope.map_or(Vec::new(), |s| {
-            s.split(' ').map(ToString::to_string).collect()
-        });
 
         let created_by = contacts.ok_or_else(|| anyhow!("no contact list"))?;
         let created_by = created_by.first().ok_or_else(|| anyhow!("no contact"))?;
@@ -56,8 +46,6 @@ impl TryFrom<OAuth2Client> for Credential {
         Ok(Self {
             name,
             client_id,
-            scopes,
-            audiences,
             created_by_id,
             organization_id,
             created_at,
