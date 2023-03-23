@@ -136,6 +136,27 @@ impl Mutation {
 
         Ok(EditCredentialPayload { credential })
     }
+
+    /// Res
+    ///
+    /// # Errors
+    /// This function fails if ...
+    pub async fn delete_credential(
+        &self,
+        ctx: &Context<'_>,
+        input: DeleteCredentialInput,
+    ) -> Result<DeleteCredentialPayload> {
+        let AppContext { user_id, .. } = ctx.data::<AppContext>()?;
+        let ory = ctx.data::<Client>()?;
+
+        let _user_id = user_id.ok_or_else(|| Error::new("X-USER-ID header not found"))?;
+
+        ory.delete_client(&input.credential).await?;
+
+        Ok(DeleteCredentialPayload {
+            credential: input.credential,
+        })
+    }
 }
 
 #[derive(InputObject, Clone, Debug)]
@@ -164,4 +185,14 @@ pub struct EditCredentialInput {
 #[derive(Debug, Clone, SimpleObject)]
 pub struct EditCredentialPayload {
     credential: Credential,
+}
+
+#[derive(Debug, Clone, InputObject)]
+pub struct DeleteCredentialInput {
+    pub credential: String,
+}
+
+#[derive(Debug, Clone, SimpleObject)]
+pub struct DeleteCredentialPayload {
+    credential: String,
 }
