@@ -81,6 +81,7 @@ impl Mutation {
 
         let key = CredentialEventKey {
             id: client_id.to_string(),
+            user_id: user_id.to_string(),
         };
 
         producer.send(Some(&event), Some(&key)).await?;
@@ -146,9 +147,30 @@ impl Mutation {
         ctx: &Context<'_>,
         input: DeleteCredentialInput,
     ) -> Result<DeleteCredentialPayload> {
+        let AppContext { user_id, .. } = ctx.data::<AppContext>()?;
         let ory = ctx.data::<Client>()?;
+        let producer = ctx.data::<Producer<CredentialEvents>>()?;
+
+        let user_id = user_id.ok_or_else(|| Error::new("X-USER-ID header not found"))?;
+        let current_client = ory.get_client(&input.credential.clone()).await?;
+        let current_credential: Credential = current_client.clone().try_into()?;
 
         ory.delete_client(&input.credential).await?;
+
+        let event = CredentialEvents {
+            event: Some(Event::Oauth2ClientDeleted(proto::OAuth2Client {
+                user_id: user_id.to_string(),
+                client_name: current_client.client_name.unwrap_or_default(),
+                organization: current_credential.organization_id.to_string(),
+            })),
+        };
+
+        let key = CredentialEventKey {
+            id: input.credential.clone(),
+            user_id: user_id.to_string(),
+        };
+
+        producer.send(Some(&event), Some(&key)).await?;
 
         Ok(DeleteCredentialPayload {
             credential: input.credential,
