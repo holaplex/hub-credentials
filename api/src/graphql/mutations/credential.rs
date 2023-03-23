@@ -146,10 +146,7 @@ impl Mutation {
         ctx: &Context<'_>,
         input: DeleteCredentialInput,
     ) -> Result<DeleteCredentialPayload> {
-        let AppContext { user_id, .. } = ctx.data::<AppContext>()?;
         let ory = ctx.data::<Client>()?;
-
-        let _user_id = user_id.ok_or_else(|| Error::new("X-USER-ID header not found"))?;
 
         ory.delete_client(&input.credential).await?;
 
