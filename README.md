@@ -1,6 +1,6 @@
 # Hub Credentials
 
-GraphQL API for interacting with Ory Hydra. It is responsible for creating and reading Ory OAuth2 clients and access tokens.
+Hub credentials is a service responsible for managing OAuth2 API credentials for authenticating with the Holaplex Hub API. It allows users to create, edit, and delete API credentials, and provides access tokens for making requests to the API. The service provides GraphQL APIs to manage credentials associated with an organization.
 
 # Getting Started
 

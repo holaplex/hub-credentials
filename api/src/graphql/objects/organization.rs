@@ -12,6 +12,16 @@ pub struct Organization {
 
 #[ComplexObject]
 impl Organization {
+    /// Get a single API credential by client ID.
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx` - The GraphQL context object containing the database connection pool and other data.
+    /// * `client_id` - The client ID of the API credential to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// The API credential with the specified client ID.
     async fn credential(&self, ctx: &Context<'_>, client_id: String) -> Result<Credential> {
         let ory = ctx.data::<Client>()?;
 
@@ -22,6 +32,17 @@ impl Organization {
         Ok(credential)
     }
 
+    /// Get a list of API credentials associated with this organization.
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx` - The GraphQL context object containing the database connection pool and other data.
+    /// * `limit` - Optional limit on the number of credentials to retrieve.
+    /// * `offset` - Optional offset for the credentials to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// A list of API credentials associated with this organization.
     async fn credentials(
         &self,
         ctx: &Context<'_>,
