@@ -7,12 +7,18 @@ use hub_core::{
 };
 use ory_openapi_generated_client::models::OAuth2Client;
 
+/// An `OAuth2` client application used for authentication with the Hub API.
 #[derive(Debug, Clone, SimpleObject)]
 pub struct Credential {
+    /// A user-friendly name assigned to the credential.
     pub name: String,
+    /// A unique identifier for the credential.
     pub client_id: String,
+    /// The ID of the user who created the credential.
     pub created_by_id: Uuid,
+    /// The ID of the organization the credential belongs to.
     pub organization_id: Uuid,
+    /// The datetime in UTC when the credential was created.
     pub created_at: NaiveDateTime,
 }
 

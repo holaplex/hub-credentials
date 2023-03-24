@@ -8,10 +8,14 @@ use ory_openapi_generated_client::models::OAuth2TokenExchange;
 
 const SECONDS_IN_A_DAY: i64 = 86400;
 
+/// An access token used to authenticate and authorize access to the Hub API.
 #[derive(Debug, Clone, SimpleObject)]
 pub struct AccessToken {
+    ///  A string representing the access token used to authenticate requests.
     pub access_token: String,
+    /// A timestamp indicating when the access token will expire.
     pub expires_at: NaiveDateTime,
+    /// A string indicating the type of access token, such as "Bearer".
     pub token_type: String,
 }
 

@@ -14,10 +14,7 @@ pub struct Mutation;
 
 #[Object(name = "CredentialMutation")]
 impl Mutation {
-    /// Res
-    ///
-    /// # Errors
-    /// This function fails if ...
+    /// Create an API credential to authenticate and authorize API requests to the Holaplex Hub.
     pub async fn create_credential(
         &self,
         ctx: &Context<'_>,
@@ -80,10 +77,7 @@ impl Mutation {
         })
     }
 
-    /// Res
-    ///
-    /// # Errors
-    /// This function fails if ...
+    /// Edit the name assigned to the API credential.
     pub async fn edit_credential(
         &self,
         ctx: &Context<'_>,
@@ -114,10 +108,7 @@ impl Mutation {
         Ok(EditCredentialPayload { credential })
     }
 
-    /// Res
-    ///
-    /// # Errors
-    /// This function fails if ...
+    /// Delete the OAuth2 API credential.
     pub async fn delete_credential(
         &self,
         ctx: &Context<'_>,
@@ -154,36 +145,50 @@ impl Mutation {
     }
 }
 
+/// This struct represents the input for creating a new API credential, including the ID of the organization that the credential will be associated with and the friendly name assigned to the credential.
 #[derive(InputObject, Clone, Debug)]
 pub struct CreateCredentialInput {
+    /// The ID of the organization that the new API credential will be associated with.
     pub organization: Uuid,
+    /// The friendly name assigned to the new API credential.
     pub name: String,
 }
 
-// Request payload for creating a credential
+/// The response payload returned after successfully creating an API credential. It includes the newly created Credential object, which represents the API credential, as well as an `AccessToken` object that can be used to authenticate requests to the Hub API.
 #[derive(Debug, Clone, SimpleObject)]
 pub struct CreateCredentialPayload {
+    /// A `Credential` object representing the newly created API credential.
     credential: Credential,
+    /// An `AccessToken` object that can be used to authenticate requests to the Hub API.
     access_token: AccessToken,
 }
 
+/// The input for editing the name of an existing credential by providing the `client_id` of the credential and the new `name` to be assigned.
 #[derive(InputObject, Clone, Debug)]
 pub struct EditCredentialInput {
+    /// A unique string identifier assigned to the credential during creation.
     pub client_id: String,
+    /// The new name to be assigned to the credential.
     pub name: String,
 }
 
+/// The response for editing the name of a credential.
 #[derive(Debug, Clone, SimpleObject)]
 pub struct EditCredentialPayload {
+    /// The updated credential with the edited name.
     credential: Credential,
 }
 
+/// The input for deleting a credential.
 #[derive(Debug, Clone, InputObject)]
 pub struct DeleteCredentialInput {
+    /// The unique identifier assigned to the credential to be deleted.
     pub credential: String,
 }
 
+/// The response for deleting a credential.
 #[derive(Debug, Clone, SimpleObject)]
 pub struct DeleteCredentialPayload {
+    /// The unique identifier assigned to the deleted credential.
     credential: String,
 }
