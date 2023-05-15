@@ -14,7 +14,7 @@ RUN apt-get update -y && \
   rm -rf /var/lib/apt/lists/*
 
 FROM chef AS planner
-COPY Cargo.* rust-toolchain.toml ./
+COPY Cargo.* ./
 COPY api api
 RUN cargo chef prepare --recipe-path recipe.json
 
@@ -23,7 +23,7 @@ COPY --from=planner /app/recipe.json recipe.json
 # Build dependencies - this is the caching Docker layer!
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
-COPY Cargo.* rust-toolchain.toml ./
+COPY Cargo.* ./
 COPY api api
 RUN cargo build --release --bin holaplex-hub-credentials
 
@@ -42,4 +42,3 @@ RUN mkdir -p bin
 
 COPY --from=builder /app/target/release/holaplex-hub-credentials bin
 CMD ["bin/holaplex-hub-credentials"]
-
