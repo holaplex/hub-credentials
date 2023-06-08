@@ -15,7 +15,7 @@ env:
   CACHE_CONFIG: type=s3,region=${{ vars.AWS_REGION }},bucket=${{ vars.AWS_BUCKET }},access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }},secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
-  release:
+  build:
     strategy:
       matrix:
         arch: [amd64, arm64]
